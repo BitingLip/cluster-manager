@@ -14,7 +14,7 @@ import uuid
 # Add the app directory to the path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'app'))
 
-from gpu_detector import EnhancedGPUDetector
+from gpu_detector import GPUDetector
 from database import ClusterDatabase
 
 logging.basicConfig(level=logging.INFO)
@@ -29,7 +29,7 @@ def test_comprehensive_cluster_gpu_system():
     print("\n🔍 Phase 1: Testing GPU Detection System")
     print("-" * 40)
     
-    detector = EnhancedGPUDetector()
+    detector = GPUDetector()
     
     try:
         # Detect all GPUs

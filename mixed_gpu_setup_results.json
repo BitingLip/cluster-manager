@@ -1,0 +1,91 @@
+{
+  "plan": {
+    "strategy": "mixed_gpu_hybrid",
+    "detected_gpus": [
+      {
+        "vendor": "AMD",
+        "name": "AMD Radeon RX 6800",
+        "driver_version": "31.0.24027.6006",
+        "directml_compatible": true
+      },
+      {
+        "vendor": "AMD",
+        "name": "AMD Radeon RX 6800",
+        "driver_version": "31.0.24027.6006",
+        "directml_compatible": true
+      },
+      {
+        "vendor": "AMD",
+        "name": "AMD Radeon RX 6800 XT",
+        "driver_version": "31.0.24027.6006",
+        "directml_compatible": true
+      },
+      {
+        "vendor": "AMD",
+        "name": "AMD Radeon RX 6800",
+        "driver_version": "31.0.24027.6006",
+        "directml_compatible": true
+      },
+      {
+        "vendor": "AMD",
+        "name": "AMD Radeon RX 6800",
+        "driver_version": "31.0.24027.6006",
+        "directml_compatible": true
+      }
+    ],
+    "has_amd": true,
+    "has_nvidia": false,
+    "amd_installation": {
+      "method": "system_wide_required",
+      "reason": "DirectML driver integration requires system-wide Python",
+      "packages": [
+        "torch",
+        "torchvision",
+        "torchaudio",
+        "torch-directml",
+        "tensorflow-directml",
+        "onnxruntime-directml",
+        "numpy>=1.21.0",
+        "pillow>=8.0.0"
+      ],
+      "commands": [
+        "python -m pip install --upgrade pip",
+        "python -m pip install torch torchvision torchaudio",
+        "python -m pip install torch-directml",
+        "python -m pip install tensorflow-directml",
+        "python -m pip install onnxruntime-directml",
+        "python -m pip install numpy pillow opencv-python"
+      ],
+      "requirements": [
+        "Exit any virtual environments",
+        "Use system Python only",
+        "AMD Adrenalin Edition 23.40.27.06 required"
+      ],
+      "verification": [
+        "python -c \"import torch_directml; print(f'DirectML devices: {torch_directml.device_count()}')\"",
+        "python -c \"import tensorflow as tf; print(f'TF GPUs: {len(tf.config.list_physical_devices('GPU'))}')\""
+      ]
+    },
+    "nvidia_installation": {},
+    "installation_order": [
+      "amd_system_wide"
+    ],
+    "warnings": [
+      "AMD DirectML requires system-wide installation - no virtual environments"
+    ],
+    "verification_steps": []
+  },
+  "execution_results": {
+    "start_time": "2025-06-03T19:43:21.531978",
+    "amd_results": {
+      "success": false
+    },
+    "nvidia_results": {},
+    "overall_success": false,
+    "errors": [
+      "AMD command failed: python -m pip install tensorflow-directml"
+    ],
+    "warnings": [],
+    "end_time": "2025-06-03T19:43:36.764820"
+  }
+}

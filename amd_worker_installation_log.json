@@ -1,0 +1,27 @@
+{
+  "system_requirements": {
+    "platform": "windows",
+    "python_version": "3.10",
+    "python_64bit": true,
+    "windows_version": "Microsoft Windows [Version 10.0.26100.4061]",
+    "amd_drivers": true,
+    "visual_studio_runtime": false,
+    "git_installed": true
+  },
+  "installation_steps": {
+    "python_dependencies": false,
+    "amd_rocm": false,
+    "ai_frameworks": true,
+    "model_cache": true
+  },
+  "test_results": {
+    "torch_available": true,
+    "torch_rocm": false,
+    "directml_available": false,
+    "gpu_count": 0,
+    "memory_total": 0,
+    "test_inference": false
+  },
+  "worker_config": {},
+  "success": false
+}

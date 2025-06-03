@@ -1,0 +1,54 @@
+# AMD GPU Worker Requirements
+# Optimized for RX 6800/6800 XT setup with DirectML and ROCm support
+
+# Core PyTorch with ROCm support
+--index-url https://download.pytorch.org/whl/rocm5.6
+torch==2.1.0+rocm5.6
+torchvision==0.16.0+rocm5.6
+torchaudio==2.1.0+rocm5.6
+
+# DirectML support for Windows AMD GPUs
+tensorflow-directml>=1.15.8
+onnxruntime-directml>=1.15.0
+torch-directml>=0.2.0
+
+# Core AI libraries
+transformers>=4.30.0
+diffusers>=0.20.0
+accelerate>=0.20.0
+safetensors>=0.3.0
+datasets>=2.10.0
+tokenizers>=0.13.0
+
+# Computer Vision
+opencv-python>=4.7.0
+pillow>=9.0.0
+controlnet-aux>=0.0.6
+compel>=2.0.0
+
+# Utilities
+numpy>=1.21.0
+scipy>=1.9.0
+scikit-learn>=1.1.0
+pandas>=1.5.0
+
+# Web interfaces
+gradio>=3.35.0
+streamlit>=1.25.0
+fastapi>=0.100.0
+uvicorn[standard]>=0.22.0
+
+# Model management
+huggingface-hub>=0.15.0
+git-python>=1.0.0
+
+# Performance optimization
+psutil>=5.9.0
+gpustat>=1.1.0
+
+# Monitoring and logging
+wandb>=0.15.0
+tensorboard>=2.13.0
+
+# Optional: XFormers for memory efficiency (if available for AMD)
+# xformers>=0.0.20  # Uncomment if AMD support is available

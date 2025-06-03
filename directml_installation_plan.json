@@ -1,0 +1,91 @@
+{
+  "strategy": "directml_system_wide_required",
+  "detected_gpus": [
+    {
+      "vendor": "AMD",
+      "name": "AMD Radeon RX 6800",
+      "driver_version": "31.0.24027.6006",
+      "directml_compatible": true
+    },
+    {
+      "vendor": "AMD",
+      "name": "AMD Radeon RX 6800",
+      "driver_version": "31.0.24027.6006",
+      "directml_compatible": true
+    },
+    {
+      "vendor": "AMD",
+      "name": "AMD Radeon RX 6800 XT",
+      "driver_version": "31.0.24027.6006",
+      "directml_compatible": true
+    },
+    {
+      "vendor": "AMD",
+      "name": "AMD Radeon RX 6800",
+      "driver_version": "31.0.24027.6006",
+      "directml_compatible": true
+    },
+    {
+      "vendor": "AMD",
+      "name": "AMD Radeon RX 6800",
+      "driver_version": "31.0.24027.6006",
+      "directml_compatible": true
+    }
+  ],
+  "has_amd": true,
+  "has_nvidia": false,
+  "environments": {
+    "amd_directml": {
+      "name": "system_wide_directml",
+      "installation_method": "system_wide_mandatory",
+      "python_requirement": "system_python_only",
+      "virtual_env_compatible": false,
+      "packages": [
+        "torch>=2.0.0",
+        "torchvision>=0.15.0",
+        "torchaudio>=2.0.0",
+        "torch-directml>=0.2.0",
+        "onnxruntime-directml>=1.15.0",
+        "numpy>=1.21.0",
+        "pillow>=8.0.0"
+      ],
+      "installation_commands": [
+        "python -m pip install --upgrade pip",
+        "python -m pip install torch torchvision torchaudio",
+        "python -m pip install torch-directml",
+        "python -m pip install onnxruntime-directml",
+        "python -m pip install numpy pillow opencv-python"
+      ],
+      "pre_installation_checks": [
+        "Verify not in virtual environment: deactivate",
+        "Check system Python: python --version",
+        "Verify AMD driver: AMD Adrenalin Edition 23.40.27.06"
+      ],
+      "verification_commands": [
+        "python -c \"import torch_directml; print(f'DirectML devices: {torch_directml.device_count()}')\"",
+        "python -c \"import torch_directml; device = torch_directml.device(); print(f'DirectML device: {device}')\""
+      ],
+      "environment_variables": {
+        "TORCH_DIRECTML_DEVICE": "0",
+        "DML_VISIBLE_DEVICES": "all"
+      },
+      "usage_pattern": "direct_system_python_execution"
+    }
+  },
+  "critical_warnings": [
+    "\u274c CRITICAL: DirectML MUST use system-wide Python installation",
+    "\u274c CRITICAL: Virtual environments WILL BREAK DirectML functionality",
+    "\u274c CRITICAL: AMD Adrenalin Edition 23.40.27.06 driver required",
+    "\u26a0\ufe0f DirectML driver integration requires global Python access"
+  ],
+  "installation_order": [
+    "check_virtual_environment_exit",
+    "install_amd_directml_system_wide"
+  ],
+  "verification_steps": [
+    "Test DirectML device enumeration (system Python)",
+    "Test CUDA device enumeration (virtual env)",
+    "Verify no package conflicts",
+    "Test tensor operations on each device type"
+  ]
+}

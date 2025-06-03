@@ -1,0 +1,33 @@
+{
+  "driver_compatibility": {
+    "directml_compatible": true,
+    "driver_version": "31.0.24027.6006",
+    "adrenalin_version": "23.40.27.06",
+    "virtual_env_supported": true,
+    "installation_method": "system_wide_current",
+    "issues": [
+      "DirectML requires system-wide driver access",
+      "Virtual environments may isolate driver dependencies",
+      "AMD Adrenalin drivers expect global system registration"
+    ],
+    "recommendations": [
+      "Install Python packages system-wide for AMD DirectML",
+      "Use conda environments instead of venv (better driver compatibility)",
+      "Ensure Windows PATH includes AMD driver directories",
+      "Use separate Python installations rather than virtual environments"
+    ]
+  },
+  "installation_status": {
+    "torch_directml_available": false,
+    "tensorflow_directml_available": false,
+    "onnxruntime_directml_available": true,
+    "installation_location": "C:\\Users\\admin\\AppData\\Local\\Programs\\Python\\Python310",
+    "issues": [
+      "torch-directml not installed",
+      "tensorflow-directml not installed"
+    ],
+    "working_packages": [
+      "onnxruntime-directml"
+    ]
+  }
+}

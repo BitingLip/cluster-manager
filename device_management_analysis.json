@@ -1,0 +1,75 @@
+{
+  "timestamp": "2025-06-03T20:23:56.134318",
+  "environment_status": {
+    "python_executable": "C:\\Users\\admin\\AppData\\Local\\Programs\\Python\\Python310\\python.exe",
+    "in_virtual_env": false,
+    "system_python": true,
+    "directml_compatible": true,
+    "warnings": []
+  },
+  "available_devices": {
+    "amd_directml": [
+      {
+        "device_id": 0,
+        "device_string": "privateuseone:0",
+        "framework": "torch_directml",
+        "vendor": "AMD",
+        "available": true,
+        "requires_system_python": true
+      },
+      {
+        "device_id": 1,
+        "device_string": "privateuseone:1",
+        "framework": "torch_directml",
+        "vendor": "AMD",
+        "available": true,
+        "requires_system_python": true
+      },
+      {
+        "device_id": 2,
+        "device_string": "privateuseone:2",
+        "framework": "torch_directml",
+        "vendor": "AMD",
+        "available": true,
+        "requires_system_python": true
+      },
+      {
+        "device_id": 3,
+        "device_string": "privateuseone:3",
+        "framework": "torch_directml",
+        "vendor": "AMD",
+        "available": true,
+        "requires_system_python": true
+      },
+      {
+        "device_id": 4,
+        "device_string": "privateuseone:4",
+        "framework": "torch_directml",
+        "vendor": "AMD",
+        "available": true,
+        "requires_system_python": true
+      }
+    ],
+    "nvidia_cuda": [],
+    "fallback": [
+      {
+        "device_id": 0,
+        "device_string": "cpu",
+        "framework": "torch_cpu",
+        "vendor": "CPU",
+        "available": true,
+        "universal_compatible": true
+      }
+    ]
+  },
+  "compatibility_check": {
+    "amd_directml_ready": true,
+    "nvidia_cuda_ready": false,
+    "mixed_setup_viable": false,
+    "environment_issues": false
+  },
+  "recommendations": [],
+  "generated_files": [
+    "gpu_device_selector.py"
+  ]
+}

@@ -1,0 +1,229 @@
+{
+  "test_timestamp": "2025-06-03T16:57:54.634412",
+  "detected_gpus": [
+    {
+      "index": 0,
+      "vendor": "AMD",
+      "name": "AMD Radeon RX 6800",
+      "memory_total_mb": 4095,
+      "memory_used_mb": 0,
+      "memory_available_mb": 4095,
+      "utilization_percent": 0,
+      "temperature_celsius": null,
+      "power_usage_watts": null,
+      "driver_version": "31.0.24027.6006",
+      "ai_capabilities": {
+        "directml_support": true,
+        "fp16_support": true,
+        "quantization_support": true,
+        "driver_optimized": true,
+        "ai_accelerators": false,
+        "suitable_for_inference": true,
+        "suitable_for_training": false,
+        "recommended_models": [
+          "Phi-3 mini",
+          "Stable Diffusion (low VRAM mode)",
+          "Basic CNNs",
+          "Small transformers"
+        ],
+        "performance_tier": "medium-high",
+        "architecture_notes": "Good AI performance with DirectML optimizations and AWQ quantization support"
+      },
+      "framework_support": [
+        "DirectML",
+        "PyTorch-DirectML",
+        "ONNX-DirectML",
+        "TensorFlow-DirectML",
+        "OpenCL",
+        "ROCm (Linux)",
+        "llama.cpp (OpenCL)",
+        "Olive (DirectML)"
+      ],
+      "metadata": {
+        "collection_time": "2025-06-03T16:57:54.627916",
+        "detection_method": "powershell_wmi",
+        "architecture": "RDNA2 (RX 6000 series)",
+        "pnp_device_id": "PCI\\VEN_1002&DEV_73BF&SUBSYS_39611462&REV_C3\\6&B1A57B1&0&000000E6"
+      }
+    },
+    {
+      "index": 1,
+      "vendor": "AMD",
+      "name": "AMD Radeon RX 6800 XT",
+      "memory_total_mb": 4095,
+      "memory_used_mb": 0,
+      "memory_available_mb": 4095,
+      "utilization_percent": 0,
+      "temperature_celsius": null,
+      "power_usage_watts": null,
+      "driver_version": "31.0.24027.6006",
+      "ai_capabilities": {
+        "directml_support": true,
+        "fp16_support": true,
+        "quantization_support": true,
+        "driver_optimized": true,
+        "ai_accelerators": false,
+        "suitable_for_inference": true,
+        "suitable_for_training": false,
+        "recommended_models": [
+          "Phi-3 mini",
+          "Stable Diffusion (low VRAM mode)",
+          "Basic CNNs",
+          "Small transformers"
+        ],
+        "performance_tier": "medium-high",
+        "architecture_notes": "Good AI performance with DirectML optimizations and AWQ quantization support"
+      },
+      "framework_support": [
+        "DirectML",
+        "PyTorch-DirectML",
+        "ONNX-DirectML",
+        "TensorFlow-DirectML",
+        "OpenCL",
+        "ROCm (Linux)",
+        "llama.cpp (OpenCL)",
+        "Olive (DirectML)"
+      ],
+      "metadata": {
+        "collection_time": "2025-06-03T16:57:54.628413",
+        "detection_method": "powershell_wmi",
+        "architecture": "RDNA2 (RX 6000 series)",
+        "pnp_device_id": "PCI\\VEN_1002&DEV_73BF&SUBSYS_0E3A1002&REV_C1\\6&14E30A4F&0&000000E8"
+      }
+    }
+  ],
+  "amd_gpus": [
+    {
+      "index": 0,
+      "vendor": "AMD",
+      "name": "AMD Radeon RX 6800",
+      "memory_total_mb": 4095,
+      "memory_used_mb": 0,
+      "memory_available_mb": 4095,
+      "utilization_percent": 0,
+      "temperature_celsius": null,
+      "power_usage_watts": null,
+      "driver_version": "31.0.24027.6006",
+      "ai_capabilities": {
+        "directml_support": true,
+        "fp16_support": true,
+        "quantization_support": true,
+        "driver_optimized": true,
+        "ai_accelerators": false,
+        "suitable_for_inference": true,
+        "suitable_for_training": false,
+        "recommended_models": [
+          "Phi-3 mini",
+          "Stable Diffusion (low VRAM mode)",
+          "Basic CNNs",
+          "Small transformers"
+        ],
+        "performance_tier": "medium-high",
+        "architecture_notes": "Good AI performance with DirectML optimizations and AWQ quantization support"
+      },
+      "framework_support": [
+        "DirectML",
+        "PyTorch-DirectML",
+        "ONNX-DirectML",
+        "TensorFlow-DirectML",
+        "OpenCL",
+        "ROCm (Linux)",
+        "llama.cpp (OpenCL)",
+        "Olive (DirectML)"
+      ],
+      "metadata": {
+        "collection_time": "2025-06-03T16:57:54.627916",
+        "detection_method": "powershell_wmi",
+        "architecture": "RDNA2 (RX 6000 series)",
+        "pnp_device_id": "PCI\\VEN_1002&DEV_73BF&SUBSYS_39611462&REV_C3\\6&B1A57B1&0&000000E6"
+      }
+    },
+    {
+      "index": 1,
+      "vendor": "AMD",
+      "name": "AMD Radeon RX 6800 XT",
+      "memory_total_mb": 4095,
+      "memory_used_mb": 0,
+      "memory_available_mb": 4095,
+      "utilization_percent": 0,
+      "temperature_celsius": null,
+      "power_usage_watts": null,
+      "driver_version": "31.0.24027.6006",
+      "ai_capabilities": {
+        "directml_support": true,
+        "fp16_support": true,
+        "quantization_support": true,
+        "driver_optimized": true,
+        "ai_accelerators": false,
+        "suitable_for_inference": true,
+        "suitable_for_training": false,
+        "recommended_models": [
+          "Phi-3 mini",
+          "Stable Diffusion (low VRAM mode)",
+          "Basic CNNs",
+          "Small transformers"
+        ],
+        "performance_tier": "medium-high",
+        "architecture_notes": "Good AI performance with DirectML optimizations and AWQ quantization support"
+      },
+      "framework_support": [
+        "DirectML",
+        "PyTorch-DirectML",
+        "ONNX-DirectML",
+        "TensorFlow-DirectML",
+        "OpenCL",
+        "ROCm (Linux)",
+        "llama.cpp (OpenCL)",
+        "Olive (DirectML)"
+      ],
+      "metadata": {
+        "collection_time": "2025-06-03T16:57:54.628413",
+        "detection_method": "powershell_wmi",
+        "architecture": "RDNA2 (RX 6000 series)",
+        "pnp_device_id": "PCI\\VEN_1002&DEV_73BF&SUBSYS_0E3A1002&REV_C1\\6&14E30A4F&0&000000E8"
+      }
+    }
+  ],
+  "directml_support": {
+    "available": false,
+    "error": "tensorflow-directml not installed"
+  },
+  "framework_recommendations": {
+    "TensorFlow + DirectML": {
+      "recommendation": "Install Required",
+      "confidence": "High",
+      "notes": "Best option for AMD GPUs on Windows",
+      "installation": "pip install tensorflow-directml"
+    },
+    "PyTorch + DirectML": {
+      "recommendation": "Recommended",
+      "confidence": "Medium",
+      "notes": "Experimental DirectML support for PyTorch",
+      "installation": "pip install torch-directml"
+    },
+    "ONNX Runtime + DirectML": {
+      "recommendation": "Recommended",
+      "confidence": "High",
+      "notes": "Excellent for model inference with AMD GPUs",
+      "installation": "pip install onnxruntime-directml"
+    }
+  },
+  "performance_assessment": {
+    "overall_score": 2.99951171875,
+    "directml_score": 2,
+    "memory_score": 3.9990234375,
+    "bottlenecks": [
+      "Limited GPU memory",
+      "DirectML not installed"
+    ],
+    "optimizations": [
+      "Consider upgrading to higher memory AMD GPU",
+      "Install tensorflow-directml for GPU acceleration",
+      "Enable GPU memory growth in TensorFlow",
+      "Use mixed precision training for better performance"
+    ],
+    "amd_gpu_count": 2,
+    "total_memory_gb": 7.998046875
+  },
+  "test_status": "success"
+}

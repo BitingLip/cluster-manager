@@ -1,0 +1,71 @@
+{
+  "total_gpus": 5,
+  "gpus": [
+    {
+      "name": "AMD Radeon RX 6800",
+      "memory_gb": 4.0,
+      "memory_mb": 4095.0,
+      "driver_version": "31.0.24027.6006",
+      "status": "OK",
+      "pnp_device_id": "PCI\\VEN_1002&DEV_73BF&SUBSYS_39611462&REV_C3\\6&B1A57B1&0&000000E6",
+      "vendor": "AMD",
+      "type": "GPU",
+      "compute_capability": "RDNA2",
+      "directml_compatible": true,
+      "detection_method": "powershell_wmi"
+    },
+    {
+      "name": "AMD Radeon RX 6800",
+      "memory_gb": 4.0,
+      "memory_mb": 4095.0,
+      "driver_version": "31.0.24027.6006",
+      "status": "OK",
+      "pnp_device_id": "PCI\\VEN_1002&DEV_73BF&SUBSYS_39611462&REV_C3\\6&195D38B&0&000000E7",
+      "vendor": "AMD",
+      "type": "GPU",
+      "compute_capability": "RDNA2",
+      "directml_compatible": true,
+      "detection_method": "powershell_wmi"
+    },
+    {
+      "name": "AMD Radeon RX 6800 XT",
+      "memory_gb": 4.0,
+      "memory_mb": 4095.0,
+      "driver_version": "31.0.24027.6006",
+      "status": "OK",
+      "pnp_device_id": "PCI\\VEN_1002&DEV_73BF&SUBSYS_0E3A1002&REV_C1\\6&14E30A4F&0&000000E8",
+      "vendor": "AMD",
+      "type": "GPU",
+      "compute_capability": "RDNA2",
+      "directml_compatible": true,
+      "detection_method": "powershell_wmi"
+    },
+    {
+      "name": "AMD Radeon RX 6800",
+      "memory_gb": 4.0,
+      "memory_mb": 4095.0,
+      "driver_version": "31.0.24027.6006",
+      "status": "OK",
+      "pnp_device_id": "PCI\\VEN_1002&DEV_73BF&SUBSYS_39611462&REV_C3\\6&38E6900&0&000000E0",
+      "vendor": "AMD",
+      "type": "GPU",
+      "compute_capability": "RDNA2",
+      "directml_compatible": true,
+      "detection_method": "powershell_wmi"
+    },
+    {
+      "name": "AMD Radeon RX 6800",
+      "memory_gb": 4.0,
+      "memory_mb": 4095.0,
+      "driver_version": "31.0.24027.6006",
+      "status": "OK",
+      "pnp_device_id": "PCI\\VEN_1002&DEV_73BF&SUBSYS_39611462&REV_C3\\6&2029A22&0&000000E5",
+      "vendor": "AMD",
+      "type": "GPU",
+      "compute_capability": "RDNA2",
+      "directml_compatible": true,
+      "detection_method": "powershell_wmi"
+    }
+  ],
+  "directml_compatible_count": 5
+}

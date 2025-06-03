@@ -1,0 +1,36 @@
+[
+  {
+    "name": "AMD Radeon RX 6800",
+    "vendor": "AMD",
+    "memory_mb": 32655,
+    "driver_version": "Unknown",
+    "chip_type": "AMD Radeon Graphics Processor (0x73BF)",
+    "id": "amd_dxdiag_2_amd_radeon_rx_6800",
+    "architecture": "RDNA2",
+    "memory_gb": 31.9,
+    "compute_capability": "gfx1030",
+    "directml_support": true,
+    "metadata": {
+      "detection_method": "dxdiag",
+      "collection_time": "2025-06-03T16:19:08.233055",
+      "chip_type": "AMD Radeon Graphics Processor (0x73BF)"
+    }
+  },
+  {
+    "name": "AMD Radeon RX 6800 XT",
+    "vendor": "AMD",
+    "memory_mb": 32655,
+    "driver_version": "Unknown",
+    "chip_type": "AMD Radeon Graphics Processor (0x73BF)",
+    "id": "amd_dxdiag_2_amd_radeon_rx_6800_xt",
+    "architecture": "RDNA2",
+    "memory_gb": 31.9,
+    "compute_capability": "gfx1030",
+    "directml_support": true,
+    "metadata": {
+      "detection_method": "dxdiag",
+      "collection_time": "2025-06-03T16:19:08.233055",
+      "chip_type": "AMD Radeon Graphics Processor (0x73BF)"
+    }
+  }
+]

@@ -1,0 +1,148 @@
+{
+  "expected_config": {
+    "rx_6800": 4,
+    "rx_6800_xt": 1,
+    "total": 5
+  },
+  "detection_results": {
+    "powershell_wmi": [
+      {
+        "Name": "AMD Radeon RX 6800",
+        "MemoryGB": 4,
+        "MemoryMB": 4095,
+        "PNPDeviceID": "PCI\\VEN_1002&DEV_73BF&SUBSYS_39611462&REV_C3\\6&B1A57B1&0&000000E6",
+        "DriverVersion": "31.0.24027.6006",
+        "Status": "OK"
+      },
+      {
+        "Name": "AMD Radeon RX 6800",
+        "MemoryGB": 4,
+        "MemoryMB": 4095,
+        "PNPDeviceID": "PCI\\VEN_1002&DEV_73BF&SUBSYS_39611462&REV_C3\\6&195D38B&0&000000E7",
+        "DriverVersion": "31.0.24027.6006",
+        "Status": "OK"
+      },
+      {
+        "Name": "AMD Radeon RX 6800 XT",
+        "MemoryGB": 4,
+        "MemoryMB": 4095,
+        "PNPDeviceID": "PCI\\VEN_1002&DEV_73BF&SUBSYS_0E3A1002&REV_C1\\6&14E30A4F&0&000000E8",
+        "DriverVersion": "31.0.24027.6006",
+        "Status": "OK"
+      },
+      {
+        "Name": "AMD Radeon RX 6800",
+        "MemoryGB": 4,
+        "MemoryMB": 4095,
+        "PNPDeviceID": "PCI\\VEN_1002&DEV_73BF&SUBSYS_39611462&REV_C3\\6&38E6900&0&000000E0",
+        "DriverVersion": "31.0.24027.6006",
+        "Status": "OK"
+      },
+      {
+        "Name": "AMD Radeon RX 6800",
+        "MemoryGB": 4,
+        "MemoryMB": 4095,
+        "PNPDeviceID": "PCI\\VEN_1002&DEV_73BF&SUBSYS_39611462&REV_C3\\6&2029A22&0&000000E5",
+        "DriverVersion": "31.0.24027.6006",
+        "Status": "OK"
+      }
+    ],
+    "dxdiag": [
+      {
+        "Name": "AMD Radeon RX 6800",
+        "MemoryGB": 31.89,
+        "MemoryMB": 32655
+      },
+      {
+        "Name": "AMD Radeon RX 6800",
+        "MemoryGB": 31.89,
+        "MemoryMB": 32655
+      },
+      {
+        "Name": "AMD Radeon RX 6800",
+        "MemoryGB": 31.89,
+        "MemoryMB": 32655
+      },
+      {
+        "Name": "AMD Radeon RX 6800 XT",
+        "MemoryGB": 31.89,
+        "MemoryMB": 32655
+      },
+      {
+        "Name": "AMD Radeon RX 6800",
+        "MemoryGB": 31.89,
+        "MemoryMB": 32655
+      },
+      {
+        "Name": "AMD Radeon RX 6800",
+        "MemoryGB": 31.89,
+        "MemoryMB": 32655
+      },
+      {
+        "Name": "AMD Radeon RX 6800",
+        "MemoryGB": 31.89,
+        "MemoryMB": 32655
+      }
+    ],
+    "wmic": [],
+    "expected": {
+      "rx_6800": 4,
+      "rx_6800_xt": 1,
+      "total": 5
+    }
+  },
+  "accuracy_analysis": {
+    "method_accuracy": {
+      "powershell_wmi": {
+        "detected_rx_6800": 4,
+        "detected_rx_6800_xt": 1,
+        "total_detected": 5,
+        "rx_6800_accuracy": 100,
+        "rx_6800_xt_accuracy": 100,
+        "total_accuracy": 100,
+        "memory_per_gpu": {
+          "RX 6800": [
+            4,
+            4,
+            4,
+            4
+          ],
+          "RX 6800 XT": [
+            4
+          ]
+        }
+      },
+      "dxdiag": {
+        "detected_rx_6800": 6,
+        "detected_rx_6800_xt": 1,
+        "total_detected": 7,
+        "rx_6800_accuracy": 100,
+        "rx_6800_xt_accuracy": 100,
+        "total_accuracy": 100,
+        "memory_per_gpu": {
+          "RX 6800": [
+            31.89,
+            31.89,
+            31.89,
+            31.89,
+            31.89,
+            31.89
+          ],
+          "RX 6800 XT": [
+            31.89
+          ]
+        }
+      }
+    },
+    "consensus": {},
+    "recommendations": [
+      "PowerShell WMI is most reliable for GPU enumeration"
+    ],
+    "best_method": "powershell_wmi",
+    "best_accuracy": 100
+  },
+  "integration_test": {
+    "detected_count": 0,
+    "success": false
+  }
+}

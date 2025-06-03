@@ -1,0 +1,55 @@
+{
+  "start_time": "2025-06-03T18:09:56.040091",
+  "environment_type": "system_python",
+  "driver_check": {
+    "compatible": true,
+    "version": "31.0.24027.6006",
+    "directml_ready": true
+  },
+  "installation_results": {
+    "success": true,
+    "packages_installed": [
+      "torch",
+      "torch-directml",
+      "tensorflow-cpu",
+      "onnxruntime-directml",
+      "numpy"
+    ],
+    "packages_failed": [],
+    "warnings": [],
+    "log_entries": [
+      "pip upgraded successfully",
+      "Installing torch...",
+      "\u2713 torch installed successfully",
+      "Installing torch-directml...",
+      "\u2713 torch-directml installed successfully",
+      "Installing tensorflow-cpu...",
+      "\u2713 tensorflow-cpu installed successfully",
+      "Installing onnxruntime-directml...",
+      "\u2713 onnxruntime-directml installed successfully",
+      "Installing numpy...",
+      "\u2713 numpy installed successfully"
+    ]
+  },
+  "test_results": {
+    "torch_directml_devices": 5,
+    "onnxruntime_directml_available": true,
+    "tensorflow_available": true,
+    "tests_passed": [
+      "torch-directml device detection",
+      "onnxruntime-directml provider available",
+      "tensorflow available"
+    ],
+    "tests_failed": [
+      "torch-directml: name 'torch' is not defined",
+      "tensorflow: no GPU devices (expected with CPU build)"
+    ],
+    "device_info": [
+      "torch-directml device: privateuseone:0"
+    ]
+  },
+  "example_script": "directml_usage_example.py",
+  "overall_success": true,
+  "recommendations": [],
+  "end_time": "2025-06-03T18:14:24.548515"
+}

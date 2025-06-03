@@ -1,0 +1,53 @@
+{
+  "cluster_id": "mixed_gpu_cluster_20250603_223332",
+  "environment_constraints": {
+    "amd_directml_requires_system_python": true,
+    "nvidia_cuda_supports_virtual_env": true,
+    "mixed_environment_management": "vendor_specific"
+  },
+  "device_pools": {
+    "amd_directml": {
+      "devices": [
+        "privateuseone:0",
+        "privateuseone:1",
+        "privateuseone:2",
+        "privateuseone:3",
+        "privateuseone:4"
+      ],
+      "framework": "torch_directml",
+      "environment_requirement": "system_python_only",
+      "activation_command": "deactivate (exit any virtual env)",
+      "device_selection_code": "\n# AMD DirectML Device Selection (System Python Only)\nimport torch_directml\n\ndef get_amd_device():\n    \"\"\"Get AMD DirectML device - requires system Python\"\"\"\n    if torch_directml.device_count() == 0:\n        raise RuntimeError(\"No DirectML devices available\")\n    \n    device = torch_directml.device(0)  # Use first AMD device\n    print(f\"Using AMD DirectML device: {device}\")\n    return device\n\n# Usage\ndevice = get_amd_device()\ntensor = torch.randn(100, 100).to(device)\n",
+      "compatible_tasks": [
+        "inference",
+        "training",
+        "image_generation"
+      ]
+    }
+  },
+  "task_routing": {
+    "default_strategy": "vendor_preference",
+    "amd_preferred_tasks": [
+      "image_generation",
+      "directml_inference"
+    ],
+    "nvidia_preferred_tasks": [
+      "cuda_training",
+      "tensor_compute"
+    ],
+    "fallback_device": "cpu"
+  },
+  "environment_switching": {
+    "for_amd_work": [
+      "1. Ensure not in virtual environment: deactivate",
+      "2. Use system Python directly",
+      "3. import torch_directml",
+      "4. device = torch_directml.device()"
+    ],
+    "for_nvidia_work": [
+      "1. (Optional) Activate CUDA environment",
+      "2. import torch",
+      "3. device = torch.device(\"cuda:0\")"
+    ]
+  }
+}

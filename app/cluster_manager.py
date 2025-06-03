@@ -280,7 +280,7 @@ class ClusterManager:
             )            
         except Exception as e:
             logger.error("Failed to update system resources", error=str(e))
-      def _update_gpu_resources(self):
+    def _update_gpu_resources(self):
         """Update GPU resource information for both NVIDIA and AMD GPUs"""
         try:
             from .gpu_detector import GPUDetector
@@ -777,11 +777,6 @@ class ClusterManager:
             frameworks.append('ROCm (Linux)')
         
         return frameworks
-            if gpu_data:
-                self.database.update_gpu_resources(self.node_id, gpu_data)
-            
-        except Exception as e:
-            logger.error("Failed to update GPU resources", error=str(e))
     
     # === PUBLIC API METHODS ===
     

@@ -1,0 +1,237 @@
+{
+  "detection_summary": {
+    "total_gpus": 5,
+    "rx_6800_count": 4,
+    "rx_6800_xt_count": 1,
+    "total_vram_gb": 80,
+    "expected_setup": {
+      "rx_6800_expected": 4,
+      "rx_6800_xt_expected": 1,
+      "total_vram_expected_gb": 80
+    },
+    "setup_correct": true
+  },
+  "gpus": [
+    {
+      "index": 0,
+      "vendor": "AMD",
+      "name": "AMD Radeon RX 6800",
+      "normalized_name": "rx_6800",
+      "memory_total_mb": 16384,
+      "memory_total_gb": 16,
+      "memory_used_mb": 0,
+      "memory_available_mb": 16384,
+      "utilization_percent": 0,
+      "temperature_celsius": null,
+      "power_usage_watts": null,
+      "driver_version": "31.0.24027.6006",
+      "compute_units": 60,
+      "base_clock_mhz": 1815,
+      "game_clock_mhz": 2105,
+      "architecture": "RDNA2",
+      "directml_compatible": true,
+      "ai_capabilities": {
+        "fp16_support": true,
+        "int8_support": true,
+        "directml_support": true,
+        "rocm_support": true,
+        "pytorch_support": true,
+        "tensorflow_support": true,
+        "onnx_support": true
+      },
+      "framework_support": {
+        "directml": true,
+        "rocm": true,
+        "pytorch": true,
+        "tensorflow": true,
+        "onnx": true,
+        "opencv": true
+      },
+      "metadata": {
+        "collection_time": "2025-06-03T12:00:00",
+        "detection_method": "corrected_powershell_wmi",
+        "pnp_device_id": "PCI\\VEN_1002&DEV_73BF&SUBSYS_39611462&REV_C3\\6&B1A57B1&0&000000E6",
+        "device_id": "VideoController1",
+        "status": "OK"
+      }
+    },
+    {
+      "index": 1,
+      "vendor": "AMD",
+      "name": "AMD Radeon RX 6800",
+      "normalized_name": "rx_6800",
+      "memory_total_mb": 16384,
+      "memory_total_gb": 16,
+      "memory_used_mb": 0,
+      "memory_available_mb": 16384,
+      "utilization_percent": 0,
+      "temperature_celsius": null,
+      "power_usage_watts": null,
+      "driver_version": "31.0.24027.6006",
+      "compute_units": 60,
+      "base_clock_mhz": 1815,
+      "game_clock_mhz": 2105,
+      "architecture": "RDNA2",
+      "directml_compatible": true,
+      "ai_capabilities": {
+        "fp16_support": true,
+        "int8_support": true,
+        "directml_support": true,
+        "rocm_support": true,
+        "pytorch_support": true,
+        "tensorflow_support": true,
+        "onnx_support": true
+      },
+      "framework_support": {
+        "directml": true,
+        "rocm": true,
+        "pytorch": true,
+        "tensorflow": true,
+        "onnx": true,
+        "opencv": true
+      },
+      "metadata": {
+        "collection_time": "2025-06-03T12:00:00",
+        "detection_method": "corrected_powershell_wmi",
+        "pnp_device_id": "PCI\\VEN_1002&DEV_73BF&SUBSYS_39611462&REV_C3\\6&195D38B&0&000000E7",
+        "device_id": "VideoController2",
+        "status": "OK"
+      }
+    },
+    {
+      "index": 2,
+      "vendor": "AMD",
+      "name": "AMD Radeon RX 6800 XT",
+      "normalized_name": "rx_6800_xt",
+      "memory_total_mb": 16384,
+      "memory_total_gb": 16,
+      "memory_used_mb": 0,
+      "memory_available_mb": 16384,
+      "utilization_percent": 0,
+      "temperature_celsius": null,
+      "power_usage_watts": null,
+      "driver_version": "31.0.24027.6006",
+      "compute_units": 72,
+      "base_clock_mhz": 2015,
+      "game_clock_mhz": 2250,
+      "architecture": "RDNA2",
+      "directml_compatible": true,
+      "ai_capabilities": {
+        "fp16_support": true,
+        "int8_support": true,
+        "directml_support": true,
+        "rocm_support": true,
+        "pytorch_support": true,
+        "tensorflow_support": true,
+        "onnx_support": true
+      },
+      "framework_support": {
+        "directml": true,
+        "rocm": true,
+        "pytorch": true,
+        "tensorflow": true,
+        "onnx": true,
+        "opencv": true
+      },
+      "metadata": {
+        "collection_time": "2025-06-03T12:00:00",
+        "detection_method": "corrected_powershell_wmi",
+        "pnp_device_id": "PCI\\VEN_1002&DEV_73BF&SUBSYS_0E3A1002&REV_C1\\6&14E30A4F&0&000000E8",
+        "device_id": "VideoController3",
+        "status": "OK"
+      }
+    },
+    {
+      "index": 3,
+      "vendor": "AMD",
+      "name": "AMD Radeon RX 6800",
+      "normalized_name": "rx_6800",
+      "memory_total_mb": 16384,
+      "memory_total_gb": 16,
+      "memory_used_mb": 0,
+      "memory_available_mb": 16384,
+      "utilization_percent": 0,
+      "temperature_celsius": null,
+      "power_usage_watts": null,
+      "driver_version": "31.0.24027.6006",
+      "compute_units": 60,
+      "base_clock_mhz": 1815,
+      "game_clock_mhz": 2105,
+      "architecture": "RDNA2",
+      "directml_compatible": true,
+      "ai_capabilities": {
+        "fp16_support": true,
+        "int8_support": true,
+        "directml_support": true,
+        "rocm_support": true,
+        "pytorch_support": true,
+        "tensorflow_support": true,
+        "onnx_support": true
+      },
+      "framework_support": {
+        "directml": true,
+        "rocm": true,
+        "pytorch": true,
+        "tensorflow": true,
+        "onnx": true,
+        "opencv": true
+      },
+      "metadata": {
+        "collection_time": "2025-06-03T12:00:00",
+        "detection_method": "corrected_powershell_wmi",
+        "pnp_device_id": "PCI\\VEN_1002&DEV_73BF&SUBSYS_39611462&REV_C3\\6&38E6900&0&000000E0",
+        "device_id": "VideoController4",
+        "status": "OK"
+      }
+    },
+    {
+      "index": 4,
+      "vendor": "AMD",
+      "name": "AMD Radeon RX 6800",
+      "normalized_name": "rx_6800",
+      "memory_total_mb": 16384,
+      "memory_total_gb": 16,
+      "memory_used_mb": 0,
+      "memory_available_mb": 16384,
+      "utilization_percent": 0,
+      "temperature_celsius": null,
+      "power_usage_watts": null,
+      "driver_version": "31.0.24027.6006",
+      "compute_units": 60,
+      "base_clock_mhz": 1815,
+      "game_clock_mhz": 2105,
+      "architecture": "RDNA2",
+      "directml_compatible": true,
+      "ai_capabilities": {
+        "fp16_support": true,
+        "int8_support": true,
+        "directml_support": true,
+        "rocm_support": true,
+        "pytorch_support": true,
+        "tensorflow_support": true,
+        "onnx_support": true
+      },
+      "framework_support": {
+        "directml": true,
+        "rocm": true,
+        "pytorch": true,
+        "tensorflow": true,
+        "onnx": true,
+        "opencv": true
+      },
+      "metadata": {
+        "collection_time": "2025-06-03T12:00:00",
+        "detection_method": "corrected_powershell_wmi",
+        "pnp_device_id": "PCI\\VEN_1002&DEV_73BF&SUBSYS_39611462&REV_C3\\6&2029A22&0&000000E5",
+        "device_id": "VideoController5",
+        "status": "OK"
+      }
+    }
+  ],
+  "system_capabilities": {
+    "total_vram_gb": 80,
+    "total_compute_units": 312,
+    "directml_support": true,
+    "estimated_performance_tflops": 780.0
+  }
+}

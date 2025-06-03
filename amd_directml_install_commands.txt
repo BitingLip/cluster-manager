@@ -1,0 +1,18 @@
+
+# AMD DirectML System-Wide Installation Commands
+# Exit virtual environment first
+deactivate
+
+# Verify system Python
+python --version
+where python
+
+# Install DirectML packages system-wide
+python -m pip install --upgrade pip
+python -m pip install torch torchvision torchaudio
+python -m pip install torch-directml
+python -m pip install tensorflow-directml
+python -m pip install onnxruntime-directml
+
+# Verify installation
+python -c "import torch_directml; print(f'DirectML devices: {torch_directml.device_count()}')"
