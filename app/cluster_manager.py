@@ -277,76 +277,506 @@ class ClusterManager:
                 network_sent=network_tx_bytes,
                 network_recv=network_rx_bytes,
                 load_avg=load_average_1m
-            )
-            
+            )            
         except Exception as e:
             logger.error("Failed to update system resources", error=str(e))
-    
-    def _update_gpu_resources(self):
-        """Update GPU resource information"""
+      def _update_gpu_resources(self):
+        """Update GPU resource information for both NVIDIA and AMD GPUs"""
         try:
-            gpu_data = []
+            from .gpu_detector import GPUDetector
             
-            # Try to get GPU information using various methods
-            try:
-                import pynvml
-                pynvml.nvmlInit()
-                device_count = pynvml.nvmlDeviceGetCount()
-                
-                for i in range(device_count):
-                    handle = pynvml.nvmlDeviceGetHandleByIndex(i)
-                    
-                    # Get GPU name
-                    name = pynvml.nvmlDeviceGetName(handle).decode('utf-8')
-                    
-                    # Get memory info
-                    mem_info = pynvml.nvmlDeviceGetMemoryInfo(handle)
-                    memory_total_mb = mem_info.total // (1024 * 1024)
-                    memory_used_mb = mem_info.used // (1024 * 1024)
-                    memory_available_mb = (mem_info.total - mem_info.used) // (1024 * 1024)
-                    
-                    # Get utilization
-                    util = pynvml.nvmlDeviceGetUtilizationRates(handle)
-                    utilization_percent = util.gpu
-                    
-                    # Get temperature
-                    try:
-                        temperature = pynvml.nvmlDeviceGetTemperature(handle, pynvml.NVML_TEMPERATURE_GPU)
-                    except:
-                        temperature = None
-                    
-                    # Get power usage
-                    try:
-                        power_usage = pynvml.nvmlDeviceGetPowerUsage(handle) / 1000.0  # Convert to watts
-                    except:
-                        power_usage = None
-                    
-                    gpu_info = {
-                        'index': i,
-                        'name': name,
-                        'memory_total_mb': memory_total_mb,
-                        'memory_used_mb': memory_used_mb,
-                        'memory_available_mb': memory_available_mb,
-                        'utilization_percent': utilization_percent,
-                        'temperature_celsius': temperature,
-                        'power_usage_watts': power_usage,
-                        'driver_version': pynvml.nvmlSystemGetDriverVersion().decode('utf-8'),
-                        'metadata': {
-                            'collection_time': datetime.now().isoformat(),
-                            'library': 'pynvml'
-                        }
-                    }
-                    
-                    gpu_data.append(gpu_info)
-                
-                logger.debug("Collected GPU information using pynvml", gpu_count=len(gpu_data))
-                
-            except ImportError:
-                logger.debug("pynvml not available, skipping GPU monitoring")
-            except Exception as e:
-                logger.warning("Failed to collect GPU information", error=str(e))
+            detector = GPUDetector()
+            gpu_data = detector.detect_all_gpus()
             
             # Update database if we have GPU data
+            if gpu_data:
+                # Store each GPU's information in the database
+                for gpu in gpu_data:
+                    try:
+                        self.database.update_gpu_resources(
+                            node_id=self.node_id,
+                            gpu_data=gpu
+                        )
+                    except Exception as e:
+                        logger.warning(f"Failed to store GPU {gpu.get('index', 'unknown')} data: {e}")
+                
+                logger.debug(f"Updated GPU resources for {len(gpu_data)} GPU(s)")
+            else:
+                logger.debug("No GPUs detected or available")
+                
+        except Exception as e:
+            logger.warning(f"Failed to collect GPU information: {e}")
+    
+    def get_gpu_summary(self) -> Dict[str, Any]:
+        """Get a summary of GPU capabilities for AI workloads"""
+        try:
+            from .gpu_detector import GPUDetector
+            
+            detector = GPUDetector()
+            gpu_data = detector.detect_all_gpus()
+            
+            summary = {
+                'total_gpus': len(gpu_data),
+                'nvidia_gpus': 0,
+                'amd_gpus': 0,
+                'total_vram_gb': 0,
+                'ai_capable_gpus': 0,
+                'training_capable_gpus': 0,
+                'inference_capable_gpus': 0,
+                'recommended_frameworks': set(),
+                'supported_models': set(),
+                'performance_tiers': {},
+                'gpu_details': []
+            }
+            
+            for gpu in gpu_data:
+                # Count by vendor
+                if gpu['vendor'] == 'NVIDIA':
+                    summary['nvidia_gpus'] += 1
+                elif gpu['vendor'] == 'AMD':
+                    summary['amd_gpus'] += 1
+                
+                # Sum VRAM
+                summary['total_vram_gb'] += gpu.get('memory_total_mb', 0) / 1024
+                
+                # Analyze AI capabilities
+                ai_caps = gpu.get('ai_capabilities', {})
+                
+                if ai_caps.get('suitable_for_inference'):
+                    summary['inference_capable_gpus'] += 1
+                
+                if ai_caps.get('suitable_for_training'):
+                    summary['training_capable_gpus'] += 1
+                
+                if ai_caps.get('suitable_for_inference') or ai_caps.get('suitable_for_training'):
+                    summary['ai_capable_gpus'] += 1
+                
+                # Collect frameworks and models
+                frameworks = gpu.get('framework_support', [])
+                summary['recommended_frameworks'].update(frameworks)
+                
+                models = ai_caps.get('recommended_models', [])
+                summary['supported_models'].update(models)
+                
+                # Performance tiers
+                tier = ai_caps.get('performance_tier', 'unknown')
+                summary['performance_tiers'][tier] = summary['performance_tiers'].get(tier, 0) + 1
+                
+                # GPU details for summary
+                summary['gpu_details'].append({
+                    'name': gpu['name'],
+                    'vendor': gpu['vendor'],
+                    'memory_gb': gpu.get('memory_total_mb', 0) / 1024,
+                    'architecture': gpu.get('metadata', {}).get('architecture', 'Unknown'),
+                    'ai_performance_tier': tier,
+                    'suitable_for_training': ai_caps.get('suitable_for_training', False),
+                    'suitable_for_inference': ai_caps.get('suitable_for_inference', False)
+                })
+            
+            # Convert sets to lists for JSON serialization
+            summary['recommended_frameworks'] = list(summary['recommended_frameworks'])
+            summary['supported_models'] = list(summary['supported_models'])
+            
+            return summary
+            
+        except Exception as e:
+            logger.error(f"Failed to generate GPU summary: {e}")
+            return {}
+    
+    def _detect_nvidia_gpus(self) -> List[Dict[str, Any]]:
+        """Detect NVIDIA GPUs using NVML"""
+        nvidia_gpus = []
+        
+        try:
+            import pynvml
+            pynvml.nvmlInit()
+            device_count = pynvml.nvmlDeviceGetCount()
+            
+            for i in range(device_count):
+                handle = pynvml.nvmlDeviceGetHandleByIndex(i)
+                
+                # Get GPU name
+                name = pynvml.nvmlDeviceGetName(handle).decode('utf-8')
+                
+                # Get memory info
+                mem_info = pynvml.nvmlDeviceGetMemoryInfo(handle)
+                memory_total_mb = mem_info.total // (1024 * 1024)
+                memory_used_mb = mem_info.used // (1024 * 1024)
+                memory_available_mb = (mem_info.total - mem_info.used) // (1024 * 1024)
+                
+                # Get utilization
+                util = pynvml.nvmlDeviceGetUtilizationRates(handle)
+                utilization_percent = util.gpu
+                
+                # Get temperature
+                try:
+                    temperature = pynvml.nvmlDeviceGetTemperature(handle, pynvml.NVML_TEMPERATURE_GPU)
+                except:
+                    temperature = None
+                
+                # Get power usage
+                try:
+                    power_usage = pynvml.nvmlDeviceGetPowerUsage(handle) / 1000.0  # Convert to watts
+                except:
+                    power_usage = None
+                
+                # Get compute capability and other details
+                try:
+                    major, minor = pynvml.nvmlDeviceGetCudaComputeCapability(handle)
+                    compute_capability = f"{major}.{minor}"
+                except:
+                    compute_capability = "Unknown"
+                
+                # Determine AI capabilities based on architecture
+                ai_capabilities = self._assess_nvidia_ai_capabilities(name, compute_capability, memory_total_mb)
+                
+                gpu_info = {
+                    'index': i,
+                    'vendor': 'NVIDIA',
+                    'name': name,
+                    'memory_total_mb': memory_total_mb,
+                    'memory_used_mb': memory_used_mb,
+                    'memory_available_mb': memory_available_mb,
+                    'utilization_percent': utilization_percent,
+                    'temperature_celsius': temperature,
+                    'power_usage_watts': power_usage,
+                    'compute_capability': compute_capability,
+                    'ai_capabilities': ai_capabilities,
+                    'driver_version': pynvml.nvmlSystemGetDriverVersion().decode('utf-8'),
+                    'framework_support': ['CUDA', 'DirectML', 'OpenCL'],
+                    'metadata': {
+                        'collection_time': datetime.now().isoformat(),
+                        'detection_method': 'pynvml',
+                        'architecture': self._get_nvidia_architecture(name)
+                    }
+                }
+                
+                nvidia_gpus.append(gpu_info)
+            
+            if nvidia_gpus:
+                logger.info(f"Detected {len(nvidia_gpus)} NVIDIA GPU(s)")
+                
+        except ImportError:
+            logger.debug("pynvml not available, skipping NVIDIA GPU detection")
+        except Exception as e:
+            logger.warning("Failed to detect NVIDIA GPUs", error=str(e))
+        
+        return nvidia_gpus
+    
+    def _detect_amd_gpus(self) -> List[Dict[str, Any]]:
+        """Detect AMD GPUs using Windows DirectML and WMI"""
+        amd_gpus = []
+        
+        # Method 1: Try WMI for GPU enumeration (Windows)
+        if sys.platform == 'win32':
+            amd_gpus.extend(self._detect_amd_gpus_wmi())
+        
+        # Method 2: Try DirectML device enumeration
+        amd_gpus.extend(self._detect_amd_gpus_directml())
+        
+        # Method 3: Try OpenCL (cross-platform)
+        amd_gpus.extend(self._detect_amd_gpus_opencl())
+        
+        # Remove duplicates based on name and keep the most detailed info
+        unique_gpus = {}
+        for gpu in amd_gpus:
+            key = gpu['name']
+            if key not in unique_gpus or len(gpu) > len(unique_gpus[key]):
+                unique_gpus[key] = gpu
+        
+        final_amd_gpus = list(unique_gpus.values())
+        if final_amd_gpus:
+            logger.info(f"Detected {len(final_amd_gpus)} AMD GPU(s)")
+        
+        return final_amd_gpus
+    
+    def _detect_amd_gpus_wmi(self) -> List[Dict[str, Any]]:
+        """Detect AMD GPUs using Windows WMI"""
+        amd_gpus = []
+        
+        try:
+            import wmi
+            c = wmi.WMI()
+            
+            for gpu in c.Win32_VideoController():
+                if gpu.Name and 'AMD' in gpu.Name or 'Radeon' in gpu.Name:
+                    # Get available memory (if possible)
+                    memory_mb = 0
+                    if gpu.AdapterRAM:
+                        memory_mb = gpu.AdapterRAM // (1024 * 1024)
+                    
+                    # Assess AI capabilities based on GPU model
+                    ai_capabilities = self._assess_amd_ai_capabilities(gpu.Name, memory_mb)
+                    
+                    gpu_info = {
+                        'index': len(amd_gpus),
+                        'vendor': 'AMD',
+                        'name': gpu.Name,
+                        'memory_total_mb': memory_mb,
+                        'memory_used_mb': 0,  # WMI doesn't provide current usage
+                        'memory_available_mb': memory_mb,
+                        'utilization_percent': 0,  # WMI doesn't provide utilization
+                        'temperature_celsius': None,
+                        'power_usage_watts': None,
+                        'driver_version': gpu.DriverVersion or 'Unknown',
+                        'ai_capabilities': ai_capabilities,
+                        'framework_support': self._get_amd_framework_support(gpu.Name),
+                        'metadata': {
+                            'collection_time': datetime.now().isoformat(),
+                            'detection_method': 'wmi',
+                            'architecture': self._get_amd_architecture(gpu.Name),
+                            'pnp_device_id': gpu.PNPDeviceID
+                        }
+                    }
+                    amd_gpus.append(gpu_info)
+            
+        except ImportError:
+            logger.debug("WMI not available for AMD GPU detection")
+        except Exception as e:
+            logger.warning("Failed to detect AMD GPUs via WMI", error=str(e))
+        
+        return amd_gpus
+    
+    def _detect_amd_gpus_directml(self) -> List[Dict[str, Any]]:
+        """Detect AMD GPUs using DirectML (Windows)"""
+        amd_gpus = []
+        
+        try:
+            # This would require DirectML Python bindings
+            # For now, we'll use a placeholder approach
+            logger.debug("DirectML GPU detection not implemented yet")
+        except Exception as e:
+            logger.debug("DirectML AMD GPU detection failed", error=str(e))
+        
+        return amd_gpus
+    
+    def _detect_amd_gpus_opencl(self) -> List[Dict[str, Any]]:
+        """Detect AMD GPUs using OpenCL"""
+        amd_gpus = []
+        
+        try:
+            import pyopencl as cl
+            
+            platforms = cl.get_platforms()
+            for platform in platforms:
+                if 'AMD' in platform.name or 'Advanced Micro Devices' in platform.name:
+                    devices = platform.get_devices(device_type=cl.device_type.GPU)
+                    
+                    for i, device in enumerate(devices):
+                        memory_mb = device.global_mem_size // (1024 * 1024)
+                        
+                        # Assess AI capabilities
+                        ai_capabilities = self._assess_amd_ai_capabilities(device.name, memory_mb)
+                        
+                        gpu_info = {
+                            'index': len(amd_gpus),
+                            'vendor': 'AMD',
+                            'name': device.name,
+                            'memory_total_mb': memory_mb,
+                            'memory_used_mb': 0,  # OpenCL doesn't provide usage
+                            'memory_available_mb': memory_mb,
+                            'utilization_percent': 0,
+                            'temperature_celsius': None,
+                            'power_usage_watts': None,
+                            'compute_units': device.max_compute_units,
+                            'max_work_group_size': device.max_work_group_size,
+                            'ai_capabilities': ai_capabilities,
+                            'framework_support': self._get_amd_framework_support(device.name),
+                            'metadata': {
+                                'collection_time': datetime.now().isoformat(),
+                                'detection_method': 'opencl',
+                                'architecture': self._get_amd_architecture(device.name),
+                                'opencl_version': device.version,
+                                'platform': platform.name
+                            }
+                        }
+                        amd_gpus.append(gpu_info)
+            
+        except ImportError:
+            logger.debug("PyOpenCL not available for AMD GPU detection")
+        except Exception as e:
+            logger.debug("OpenCL AMD GPU detection failed", error=str(e))
+        
+        return amd_gpus
+    
+    def _assess_nvidia_ai_capabilities(self, name: str, compute_capability: str, memory_mb: int) -> Dict[str, Any]:
+        """Assess AI capabilities of NVIDIA GPU"""
+        capabilities = {
+            'tensor_cores': False,
+            'fp16_support': False,
+            'int8_support': False,
+            'suitable_for_inference': False,
+            'suitable_for_training': False,
+            'recommended_models': []
+        }
+        
+        # Parse compute capability
+        try:
+            major = int(compute_capability.split('.')[0])
+            minor = int(compute_capability.split('.')[1])
+        except:
+            major, minor = 0, 0
+        
+        # Tensor cores available from compute capability 7.0+
+        if major >= 7:
+            capabilities['tensor_cores'] = True
+            capabilities['fp16_support'] = True
+            capabilities['int8_support'] = True
+        elif major >= 6:
+            capabilities['fp16_support'] = True
+        
+        # Memory-based recommendations
+        if memory_mb >= 24000:  # 24GB+
+            capabilities['suitable_for_training'] = True
+            capabilities['suitable_for_inference'] = True
+            capabilities['recommended_models'] = ['LLaMA-65B-4bit', 'Stable Diffusion XL', 'GPT-3.5 equivalent']
+        elif memory_mb >= 16000:  # 16GB+
+            capabilities['suitable_for_training'] = True
+            capabilities['suitable_for_inference'] = True
+            capabilities['recommended_models'] = ['LLaMA-30B-4bit', 'Stable Diffusion 2.1', 'Fine-tuning 7B models']
+        elif memory_mb >= 8000:  # 8GB+
+            capabilities['suitable_for_inference'] = True
+            capabilities['recommended_models'] = ['LLaMA-13B-4bit', 'Stable Diffusion 1.5', 'Small model training']
+        elif memory_mb >= 4000:  # 4GB+
+            capabilities['suitable_for_inference'] = True
+            capabilities['recommended_models'] = ['LLaMA-7B-4bit', 'Stable Diffusion (optimized)', 'Small CNNs']
+        
+        return capabilities
+    
+    def _assess_amd_ai_capabilities(self, name: str, memory_mb: int) -> Dict[str, Any]:
+        """Assess AI capabilities of AMD GPU based on architecture and specs"""
+        capabilities = {
+            'directml_support': True,  # All DX12 AMD GPUs support DirectML
+            'fp16_support': False,
+            'quantization_support': False,
+            'driver_optimized': False,
+            'suitable_for_inference': False,
+            'suitable_for_training': False,
+            'recommended_models': [],
+            'architecture_notes': ''
+        }
+        
+        # Determine architecture and capabilities
+        arch = self._get_amd_architecture(name)
+        
+        if 'RDNA3' in arch:
+            capabilities.update({
+                'fp16_support': True,
+                'quantization_support': True,
+                'driver_optimized': True,
+                'ai_accelerators': True,
+                'architecture_notes': 'Latest AMD architecture with AI accelerators and optimized DirectML drivers'
+            })
+        elif 'RDNA2' in arch:
+            capabilities.update({
+                'fp16_support': True,
+                'quantization_support': True,
+                'driver_optimized': True,
+                'architecture_notes': 'Good AI performance with DirectML optimizations and quantization support'
+            })
+        elif 'RDNA1' in arch:
+            capabilities.update({
+                'fp16_support': True,
+                'quantization_support': True,
+                'driver_optimized': True,
+                'architecture_notes': 'Moderate AI performance with DirectML optimizations'
+            })
+        elif 'Vega' in arch:
+            capabilities.update({
+                'fp16_support': True,  # Vega has "rapid packed math"
+                'quantization_support': False,
+                'driver_optimized': False,
+                'architecture_notes': 'Legacy architecture with basic DirectML support, no recent AI optimizations'
+            })
+        elif 'Polaris' in arch:
+            capabilities.update({
+                'fp16_support': False,  # FP32 only
+                'quantization_support': False,
+                'driver_optimized': False,
+                'architecture_notes': 'Legacy architecture with basic DirectML support, FP32 only'
+            })
+        
+        # Memory-based recommendations (similar to NVIDIA but adjusted for AMD)
+        if memory_mb >= 20000:  # 20GB+ (RX 7900 XT/XTX)
+            capabilities['suitable_for_training'] = True
+            capabilities['suitable_for_inference'] = True
+            capabilities['recommended_models'] = ['LLaMA-30B-4bit', 'Stable Diffusion XL', 'Large model fine-tuning']
+        elif memory_mb >= 16000:  # 16GB (RX 6800 XT, Radeon VII)
+            capabilities['suitable_for_training'] = True
+            capabilities['suitable_for_inference'] = True
+            capabilities['recommended_models'] = ['LLaMA-13B-4bit', 'Stable Diffusion 2.1', 'Medium model training']
+        elif memory_mb >= 12000:  # 12GB (RX 6700 XT)
+            capabilities['suitable_for_inference'] = True
+            capabilities['recommended_models'] = ['LLaMA-13B-4bit', 'Stable Diffusion XL (optimized)', 'Small model training']
+        elif memory_mb >= 8000:  # 8GB (RX 580, RX 5700, RX 6600)
+            capabilities['suitable_for_inference'] = True
+            capabilities['recommended_models'] = ['LLaMA-7B-4bit', 'Stable Diffusion 1.5', 'Small model inference']
+        elif memory_mb >= 4000:  # 4GB (RX 580 4GB, RX 470)
+            capabilities['suitable_for_inference'] = True
+            capabilities['recommended_models'] = ['Phi-3 mini', 'Stable Diffusion (low VRAM mode)', 'Basic CNNs']
+        
+        return capabilities
+    
+    def _get_nvidia_architecture(self, name: str) -> str:
+        """Determine NVIDIA GPU architecture from name"""
+        name_upper = name.upper()
+        
+        if 'RTX 40' in name_upper or 'RTX 4' in name_upper:
+            return 'Ada Lovelace'
+        elif 'RTX 30' in name_upper or 'RTX 3' in name_upper:
+            return 'Ampere'
+        elif 'RTX 20' in name_upper or 'RTX 2' in name_upper:
+            return 'Turing'
+        elif 'GTX 16' in name_upper:
+            return 'Turing (GTX)'
+        elif 'GTX 10' in name_upper:
+            return 'Pascal'
+        elif 'GTX 9' in name_upper:
+            return 'Maxwell'
+        elif 'GTX 7' in name_upper or 'GTX 6' in name_upper:
+            return 'Kepler'
+        else:
+            return 'Unknown'
+    
+    def _get_amd_architecture(self, name: str) -> str:
+        """Determine AMD GPU architecture from name"""
+        name_upper = name.upper()
+        
+        if 'RX 7' in name_upper or '7900' in name_upper or '7800' in name_upper or '7700' in name_upper or '7600' in name_upper:
+            return 'RDNA3'
+        elif 'RX 6' in name_upper or '6900' in name_upper or '6800' in name_upper or '6700' in name_upper or '6600' in name_upper or '6500' in name_upper:
+            return 'RDNA2'
+        elif 'RX 5' in name_upper or '5700' in name_upper or '5600' in name_upper or '5500' in name_upper:
+            return 'RDNA1'
+        elif 'VEGA' in name_upper or 'RADEON VII' in name_upper:
+            return 'Vega (GCN 5)'
+        elif 'RX 5' in name_upper and ('80' in name_upper or '70' in name_upper):  # RX 580, 570
+            return 'Polaris (GCN 4)'
+        elif 'RX 4' in name_upper:  # RX 480, 470
+            return 'Polaris (GCN 4)'
+        elif 'R9' in name_upper or 'R7' in name_upper:
+            return 'GCN (Legacy)'
+        else:
+            return 'Unknown'
+    
+    def _get_amd_framework_support(self, name: str) -> List[str]:
+        """Get supported frameworks for AMD GPU"""
+        frameworks = ['DirectML']  # All modern AMD GPUs support DirectML
+        
+        arch = self._get_amd_architecture(name)
+        
+        # Add framework support based on architecture
+        if 'RDNA' in arch:
+            frameworks.extend(['PyTorch-DirectML', 'ONNX-DirectML', 'TensorFlow-DirectML'])
+        
+        # OpenCL support is universal
+        frameworks.append('OpenCL')
+        
+        # ROCm support (Linux, newer cards)
+        if 'RDNA2' in arch or 'RDNA3' in arch:
+            frameworks.append('ROCm (Linux)')
+        
+        return frameworks
             if gpu_data:
                 self.database.update_gpu_resources(self.node_id, gpu_data)
             

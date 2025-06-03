@@ -1,111 +1,138 @@
 # Cluster Manager
 
-🖥️ **Status: ⚙️ Operational**
+🖥️ **Status: ✅ Production Ready**
 
-The Cluster Manager handles GPU cluster orchestration, worker node management, and distributed task processing using Celery and Redis.
+The Cluster Manager provides distributed cluster orchestration with PostgreSQL persistence, real-time resource monitoring, and node lifecycle management for the BitingLip platform.
 
 ## Core Features
 
-- ✅ GPU worker node management
-- ✅ Celery-based task distribution  
-- ✅ Redis integration for queuing
-- ✅ Multi-GPU support
-- ✅ Centralized model access
-- ✅ Resource monitoring
+- ✅ **Real-time Monitoring**: 30-second system resource tracking (CPU, Memory, Disk)
+- ✅ **Database Persistence**: PostgreSQL integration with connection pooling
+- ✅ **Node Management**: Automatic registration, heartbeat monitoring, cleanup
+- ✅ **Cluster Health**: Comprehensive health metrics and analytics
+- ✅ **Production Ready**: Robust error handling and transaction management
+- ✅ **GPU Detection**: Automatic GPU resource discovery and monitoring
 
 ## Quick Start
 
 ```bash
-# Start Redis service
-docker-compose up -d redis
+# Start the cluster manager
+python start_cluster.py
 
-# Start worker node
-cd cluster/worker
-python app/worker.py
+# Check cluster status
+python utils/check_cluster_data.py
+
+# Debug cluster components
+python utils/debug_cluster.py
 ```
 
-Worker will automatically:
-- Connect to Redis queue
-- Initialize GPU resources
-- Register available task types
-- Begin processing tasks
+The cluster manager will automatically:
+
+- Initialize PostgreSQL database schema
+- Register itself as master node
+- Begin continuous monitoring loop
+- Track system resources every 30 seconds
+- Cleanup stale nodes automatically
 
 ## Architecture
 
 The cluster manager consists of:
 
-- **Redis Server**: Task queue and result storage
-- **Celery Workers**: GPU-accelerated task processors  
-- **Flower Dashboard**: Worker monitoring (optional)
+- **Database Layer**: PostgreSQL with connection pooling for persistence
+- **Monitoring Engine**: Real-time system resource collection using psutil
+- **Node Registry**: Automatic node discovery and lifecycle management
+- **Health Analytics**: Cluster-wide metrics and health monitoring
+
+## Project Structure
+
+```
+cluster-manager/
+├── app/                    # Core application code
+│   ├── cluster_manager.py  # Main cluster manager class
+│   ├── database.py         # PostgreSQL database operations
+│   └── simple_config.py    # Configuration management
+├── config/                 # Configuration files
+│   └── cluster-manager-db.env
+├── utils/                  # Utility scripts
+│   ├── check_cluster_data.py   # Database status checker
+│   ├── debug_cluster.py        # Component testing
+│   └── validate_cluster.py     # Cluster validation
+├── docs/                   # Documentation
+└── start_cluster.py        # Main startup script
+```
 
 ## Documentation
 
 📖 **Detailed Documentation:**
+
 - [Architecture](docs/architecture.md) - Worker design and GPU management
 - [API Reference](docs/api.md) - Task types and interfaces
 - [Development](docs/development.md) - Setup and contribution guide
 - [Deployment](docs/deployment.md) - Production configuration
 
+## Configuration
+
+Configure via environment variables in `config/cluster-manager-db.env`:
+
+```bash
+# Database Configuration
+CLUSTER_DB_HOST=localhost
+CLUSTER_DB_PORT=5432
+CLUSTER_DB_NAME=bitinglip_cluster
+CLUSTER_DB_USER=postgres
+CLUSTER_DB_PASSWORD=password
+
+# Cluster Manager Configuration
+CLUSTER_MANAGER_HOST=localhost
+CLUSTER_MANAGER_PORT=8002
+DEBUG=true
+```
+
+## Database Schema
+
+The cluster manager creates and manages these PostgreSQL tables:
+
+- **cluster_nodes**: Node registration and status tracking
+- **system_resources**: Real-time resource metrics (CPU, Memory, Disk)
+- **cluster_events**: Event logging (optional)
+- **gpu_resources**: GPU metrics and information (optional)
+
+Schema is automatically initialized on first startup via `database.initialize_schema()`.
+
+## Live Monitoring
+
+Once running, the cluster manager provides:
+
+- **Real-time Metrics**: Updated every 30 seconds
+- **Node Health**: Automatic heartbeat monitoring
+- **Resource Tracking**: CPU, Memory, Disk usage trends
+- **Cluster Analytics**: Aggregate health and performance metrics
+
+Example live data:
+
+```
+📍 cluster_manager_DESKTOP-2TQL1QP_20250603_123715
+   Type: master
+   Status: active
+   CPU: 67.7% | Memory: 43.9% | Disk: 47.1%
+   Last Heartbeat: 2025-06-03 12:37:46
+```
+
 ## Integration
 
-Works with:
-- **Gateway Manager**: Receives task requests
-- **Model Manager**: Accesses centralized models
-- **Task Manager**: Coordinates task lifecycle
+The cluster manager integrates with:
 
-## Configuration
+- **Model Manager**: Node registration for model serving
+- **Gateway Manager**: Cluster status and health reporting
+- **Task Manager**: Resource availability and load balancing
+- **PostgreSQL**: Persistent storage for all cluster data
 
-Key environment variables:
-- `MODEL_CACHE_DIR`: Path to centralized models
-- `REDIS_URL`: Redis connection string  
-- `GPU_MEMORY_FRACTION`: GPU memory allocation
-- `WORKER_CONCURRENCY`: Tasks per worker
+## Utilities
 
-### 1. Start Infrastructure Services
-```powershell
-docker-compose up -d
-```
+- `utils/check_cluster_data.py`: View current cluster status and metrics
+- `utils/debug_cluster.py`: Test all components and run diagnostics
+- `utils/validate_cluster.py`: Comprehensive cluster validation
 
-### 2. Configure Environment
-```powershell
-copy .env.example .env
-# Edit .env with your configuration
-```
-
-### 3. Start Workers
-```powershell
-start_worker.bat
-```
-
-### 4. Validate Cluster
-```powershell
-python validate_cluster.py
-```
-
-## Configuration
-
-Environment variables in `.env` (and `.env.example`) are crucial for configuring the cluster behavior:
-- `REDIS_URL`: Connection string for the Redis broker.
-- `CELERY_RESULT_BACKEND`: Configuration for Celery's result backend.
-- `GPU_DEVICES`: Specifies available GPU device IDs for workers.
-- `MODEL_CACHE_DIR`: **Note:** While previously used for a local model cache within `cluster-manager`, model storage is now centralized in `model-manager`. This variable might be deprecated or repurposed if workers fetch models directly from a path provided by `model-manager`. Configuration for accessing `model-manager` (e.g., its API endpoint or shared file path) will be important.
-
-## Scripts
-
-- `start_worker.bat`: Start Celery workers
-- `manage-cluster.ps1`: PowerShell cluster management utilities
-- `validate_cluster.py`: Health check and validation
-- `debug_*.py`: Debug utilities for troubleshooting
-- `cleanup_debug_files.ps1`: Clean up debug files
-
-## Worker Architecture
-
-Each worker:
-1. Registers with the cluster and signals its availability and capabilities (e.g., available GPUs).
-2. Receives tasks via the message broker (e.g., Celery/Redis).
-3. For tasks requiring AI models, it liaises with the `model-manager` (or uses paths provided by it) to access/load the necessary model files into GPU memory (e.g., using DirectML).
-4. Processes inference requests or other computational tasks.
-5. Returns results via the message broker or a configured result backend.
 6. Reports its health and status.
 
 ## Model Management Integration
@@ -115,6 +142,7 @@ Each worker:
 ## Future Separation
 
 **Note**: Currently contains worker code that will eventually be separated into the `model-manager` component when the entanglement is resolved. The separation will involve:
+
 - Moving model loading logic to model-manager
 - Creating clean APIs between cluster-manager and model-manager
 - Maintaining worker orchestration in cluster-manager
@@ -123,6 +151,7 @@ Each worker:
 ## Dependencies
 
 See `requirements.txt` for Python dependencies. Key packages:
+
 - `celery[redis]`: Distributed task queue
 - `torch-directml`: AMD GPU support for PyTorch
 - `transformers`: HuggingFace model support
