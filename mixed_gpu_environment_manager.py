@@ -19,6 +19,9 @@ import tempfile
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+# The GPU device helpers can be imported like this after creation:
+# from gpu_device_helpers import MixedGPUDeviceSelector, auto_select_device
+
 class MixedGPUEnvironmentManager:
     """
     Manages installations and configurations for mixed AMD/NVIDIA GPU systems
@@ -38,21 +41,48 @@ class MixedGPUEnvironmentManager:
         try:
             import sys
             sys.path.append('app')
-            from gpu_detector import GPUDetector
-            
-            detector = GPUDetector()
-            all_gpus = detector.detect_all_gpus()
-        except ImportError:
+            try:
+                from gpu_detector import GPUDetector
+                detector = GPUDetector()
+                all_gpus = detector.detect_all_gpus()
+            except ImportError:
+                logger.warning("GPUDetector module not found, using fallback detection")
+                all_gpus = self._fallback_gpu_detection()
+        except Exception as e:
             # Fallback detection method
-            logger.warning("Main GPU detector not available, using fallback detection")
+            logger.warning(f"Main GPU detector not available ({e}), using fallback detection")
             all_gpus = self._fallback_gpu_detection()
         
         # Separate by vendor
-        self.nvidia_gpus = [gpu for gpu in all_gpus if gpu.get('vendor', '').upper() == 'NVIDIA']
-        self.amd_gpus = [gpu for gpu in all_gpus if gpu.get('vendor', '').upper() == 'AMD']
+        # Handle different return formats from GPU detection
+        if isinstance(all_gpus, dict):
+            # If it's a dict, extract the GPU lists
+            if 'nvidia_gpus' in all_gpus and 'amd_gpus' in all_gpus:
+                self.nvidia_gpus = all_gpus['nvidia_gpus']
+                self.amd_gpus = all_gpus['amd_gpus']
+                all_gpus_list = self.nvidia_gpus + self.amd_gpus
+            else:
+                # Fallback: treat dict values as potential GPU lists
+                all_gpus_list = []
+                for value in all_gpus.values():
+                    if isinstance(value, list):
+                        all_gpus_list.extend(value)
+                self.nvidia_gpus = [gpu for gpu in all_gpus_list if isinstance(gpu, dict) and gpu.get('vendor', '').upper() == 'NVIDIA']
+                self.amd_gpus = [gpu for gpu in all_gpus_list if isinstance(gpu, dict) and gpu.get('vendor', '').upper() == 'AMD']
+        elif isinstance(all_gpus, list):
+            # If it's a list of GPUs, filter by vendor
+            self.nvidia_gpus = [gpu for gpu in all_gpus if isinstance(gpu, dict) and gpu.get('vendor', '').upper() == 'NVIDIA']
+            self.amd_gpus = [gpu for gpu in all_gpus if isinstance(gpu, dict) and gpu.get('vendor', '').upper() == 'AMD']
+            all_gpus_list = all_gpus
+        else:
+            # Fallback: empty lists
+            logger.warning(f"Unexpected GPU detection format: {type(all_gpus)}")
+            self.nvidia_gpus = []
+            self.amd_gpus = []
+            all_gpus_list = []
         
         detection_summary = {
-            'total_gpus': len(all_gpus),
+            'total_gpus': len(all_gpus_list),
             'nvidia_count': len(self.nvidia_gpus),
             'amd_count': len(self.amd_gpus),
             'mixed_environment': len(self.nvidia_gpus) > 0 and len(self.amd_gpus) > 0,
@@ -423,8 +453,7 @@ cmd /k
             with open('activate_amd_env.bat', 'w') as f:
                 f.write(amd_script)
             scripts['amd'] = 'activate_amd_env.bat'
-        
-        # Mixed environment script
+          # Mixed environment script
         if len(self.nvidia_gpus) > 0 and len(self.amd_gpus) > 0:
             mixed_script = f"""@echo off
 echo Activating Mixed GPU Environment...
@@ -443,273 +472,26 @@ cmd /k
     
     def create_device_selection_helpers(self) -> str:
         """
-        Create a separate Python file with device selection helpers
+        Ensure the device selection helpers module is available
         """
+        import os
+        
         helper_filename = 'gpu_device_helpers.py'
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        source_path = os.path.join(current_dir, helper_filename)
         
-        # Create the helper file content
-        helper_content = self._generate_device_helper_code()
-        
-        # Write to file
-        try:
-            with open(helper_filename, 'w', encoding='utf-8') as f:
-                f.write(helper_content)
-            logger.info(f"✅ Created device selection helpers: {helper_filename}")
+        # Check if the helper file exists in the current directory
+        if os.path.exists(source_path):
+            logger.info(f"✅ Device selection helpers already available: {helper_filename}")
             return helper_filename
-        except Exception as e:
-            logger.error(f"❌ Failed to create helper file: {e}")
+        
+        # If not in current directory, check if it exists in working directory
+        if os.path.exists(helper_filename):
+            logger.info(f"✅ Device selection helpers available: {helper_filename}")
+            return helper_filename
+        else:
+            logger.error(f"❌ Helper file not found: {helper_filename}")
             return ""
-    
-    def _generate_device_helper_code(self) -> str:
-        """Generate the actual helper code content"""
-        return '''"""
-Mixed GPU Device Selection Helpers
-Handles DirectML system-wide requirements and CUDA virtual environment compatibility
-"""
-
-import torch
-import os
-import sys
-import logging
-from typing import List, Optional, Dict, Any
-
-logger = logging.getLogger(__name__)
-
-class MixedGPUDeviceSelector:
-    """
-    Intelligent device selector for mixed AMD/NVIDIA environments
-    Respects DirectML system-wide requirements and CUDA virtual env compatibility
-    """
-    
-    def __init__(self):
-        self.environment_status = self._check_environment()
-        self.available_devices = self._discover_devices()
-        
-    def _check_environment(self) -> Dict[str, Any]:
-        """Check current Python environment status"""
-        status = {
-            'python_executable': sys.executable,
-            'in_virtual_env': self._is_in_virtual_env(),
-            'directml_compatible': False,
-            'cuda_compatible': False,
-            'warnings': []
-        }
-        
-        # DirectML compatibility (requires system Python)
-        status['directml_compatible'] = not status['in_virtual_env']
-        
-        # CUDA compatibility (works in both)
-        status['cuda_compatible'] = True
-        
-        if status['in_virtual_env']:
-            status['warnings'].append('Virtual environment detected - DirectML unavailable')
-        
-        return status
-    
-    def _is_in_virtual_env(self) -> bool:
-        """Check if running in virtual environment"""
-        return (hasattr(sys, 'real_prefix') or 
-                (hasattr(sys, 'base_prefix') and sys.base_prefix != sys.prefix))
-    
-    def _discover_devices(self) -> Dict[str, List[Dict[str, Any]]]:
-        """Discover available devices respecting environment constraints"""
-        devices = {
-            'amd_directml': [],
-            'nvidia_cuda': [],
-            'cpu_fallback': [{'device_string': 'cpu', 'name': 'CPU'}]
-        }
-        
-        # AMD DirectML devices (only if in system Python)
-        if self.environment_status['directml_compatible']:
-            try:
-                import torch_directml
-                device_count = torch_directml.device_count()
-                for i in range(device_count):
-                    devices['amd_directml'].append({
-                        'device_id': i,
-                        'device_string': f'privateuseone:{i}',
-                        'name': f'AMD DirectML Device {i}',
-                        'framework': 'torch_directml',
-                        'requires_system_python': True
-                    })
-                logger.info(f'DirectML: {device_count} AMD devices available')
-            except ImportError:
-                logger.warning('DirectML not installed')
-            except Exception as e:
-                logger.error(f'DirectML discovery failed: {e}')
-        
-        # NVIDIA CUDA devices (available in any environment)
-        try:
-            if torch.cuda.is_available():
-                device_count = torch.cuda.device_count()
-                for i in range(device_count):
-                    props = torch.cuda.get_device_properties(i)
-                    devices['nvidia_cuda'].append({
-                        'device_id': i,
-                        'device_string': f'cuda:{i}',
-                        'name': props.name,
-                        'memory_gb': props.total_memory / (1024**3),
-                        'framework': 'torch_cuda',
-                        'virtual_env_compatible': True
-                    })
-                logger.info(f'CUDA: {device_count} NVIDIA devices available')
-        except Exception as e:
-            logger.error(f'CUDA discovery failed: {e}')
-        
-        return devices
-    
-    def get_optimal_device(self, prefer_vendor: str = 'auto', task_type: str = 'general') -> Dict[str, Any]:
-        """
-        Get optimal device based on environment and preferences
-        
-        Args:
-            prefer_vendor: 'amd', 'nvidia', 'auto'
-            task_type: 'training', 'inference', 'general'
-        
-        Returns:
-            Device info dict with device, warnings, and setup instructions
-        """
-        result = {
-            'device': None,
-            'device_string': 'cpu',
-            'vendor': 'CPU',
-            'framework': 'torch_cpu',
-            'compatible': True,
-            'warnings': [],
-            'setup_instructions': [],
-            'environment_requirements': []
-        }
-        
-        amd_devices = self.available_devices['amd_directml']
-        nvidia_devices = self.available_devices['nvidia_cuda']
-        
-        # Handle AMD DirectML selection
-        if prefer_vendor in ['amd', 'auto'] and amd_devices:
-            if self.environment_status['directml_compatible']:
-                device = amd_devices[0]
-                result.update({
-                    'device': device,
-                    'device_string': device['device_string'],
-                    'vendor': 'AMD',
-                    'framework': 'torch_directml'
-                })
-                result['setup_instructions'] = [
-                    'import torch_directml',
-                    f"device = torch_directml.device({device['device_id']})",
-                    'tensor = tensor.to(device)'
-                ]
-                result['environment_requirements'] = ['System Python required']
-                logger.info(f"Selected AMD DirectML device: {device['name']}")
-                return result
-            else:
-                result['warnings'].append('❌ AMD DirectML requires system Python - exit virtual environment')
-                result['environment_requirements'] = [
-                    'Exit virtual environment: deactivate',
-                    'Use system Python for DirectML workloads'
-                ]
-        
-        # Handle NVIDIA CUDA selection
-        if prefer_vendor in ['nvidia', 'auto'] and nvidia_devices:
-            device = nvidia_devices[0]
-            result.update({
-                'device': device,
-                'device_string': device['device_string'],
-                'vendor': 'NVIDIA',
-                'framework': 'torch_cuda'
-            })
-            result['setup_instructions'] = [
-                'import torch',
-                f"device = torch.device('{device['device_string']}')",
-                'tensor = tensor.to(device)'
-            ]
-            env_status = 'virtual env' if self.environment_status['in_virtual_env'] else 'system Python'
-            result['environment_requirements'] = [f'Compatible with {env_status}']
-            logger.info(f"Selected NVIDIA CUDA device: {device['name']}")
-            return result
-        
-        # CPU fallback
-        result['warnings'].append('No compatible GPU found - using CPU')
-        result['setup_instructions'] = [
-            'import torch',
-            "device = torch.device('cpu')",
-            'tensor = tensor.to(device)'
-        ]
-        logger.warning('Falling back to CPU')
-        
-        return result
-
-def get_available_nvidia_devices() -> List[Dict[str, Any]]:
-    """Get list of available NVIDIA devices"""
-    selector = MixedGPUDeviceSelector()
-    return selector.available_devices['nvidia_cuda']
-
-def get_available_amd_devices() -> List[Dict[str, Any]]:
-    """Get list of available AMD DirectML devices"""
-    selector = MixedGPUDeviceSelector()
-    return selector.available_devices['amd_directml']
-
-def auto_select_device(prefer_vendor: str = 'auto'):
-    """
-    Automatically select the best available device
-    
-    Args:
-        prefer_vendor: 'amd', 'nvidia', 'auto'
-    
-    Returns:
-        PyTorch device object
-    """
-    selector = MixedGPUDeviceSelector()
-    result = selector.get_optimal_device(prefer_vendor=prefer_vendor)
-    
-    # Print selection info
-    print(f"🔧 Selected device: {result['device_string']} ({result['vendor']})")
-    
-    if result['warnings']:
-        print("⚠️ Warnings:")
-        for warning in result['warnings']:
-            print(f"  - {warning}")
-    
-    if result['environment_requirements']:
-        print("📋 Environment requirements:")
-        for req in result['environment_requirements']:
-            print(f"  - {req}")
-    
-    # Create and return PyTorch device
-    if result['framework'] == 'torch_directml':
-        try:
-            import torch_directml
-            return torch_directml.device(result['device']['device_id'])
-        except ImportError:
-            return torch.device('cpu')
-    elif result['framework'] == 'torch_cuda':
-        return torch.device(result['device_string'])
-    else:
-        return torch.device('cpu')
-
-# Usage examples
-if __name__ == "__main__":
-    print("🔍 Mixed GPU Device Selection Test")
-    print("=" * 40)
-    
-    # Test device selector
-    selector = MixedGPUDeviceSelector()
-    
-    print(f"Environment: {'Virtual Env' if selector.environment_status['in_virtual_env'] else 'System Python'}")
-    print(f"DirectML Compatible: {selector.environment_status['directml_compatible']}")
-    
-    # Test auto selection
-    print("\\n🎯 Auto device selection:")
-    device = auto_select_device('auto')
-    print(f"Selected: {device}")
-    
-    # Test specific vendor preferences
-    print("\\n🎯 AMD preference:")
-    amd_result = selector.get_optimal_device('amd')
-    print(f"AMD result: {amd_result['device_string']} - {amd_result['vendor']}")
-      print("\\n🎯 NVIDIA preference:")
-    nvidia_result = selector.get_optimal_device('nvidia')
-    print(f"NVIDIA result: {nvidia_result['device_string']} - {nvidia_result['vendor']}")
-'''
     
     def configure_tensorflow_gpu(self):
         """Configure TensorFlow for mixed GPU environment"""
@@ -730,12 +512,14 @@ if __name__ == "__main__":
             
             # Fallback to DirectML if available
             try:
-                import tensorflow_directml
+                # Note: tensorflow_directml is an optional dependency
+                import tensorflow_directml  # type: ignore
                 logger.info("Using TensorFlow-DirectML for AMD GPUs")
                 return True
             except ImportError:
-                logger.warning("No GPU acceleration available for TensorFlow")
+                logger.warning("TensorFlow-DirectML not available for AMD GPUs")
                 return False
+                
         except ImportError:
             logger.error("TensorFlow not installed")
             return False
@@ -889,6 +673,46 @@ def main():
         print("   - gpu_device_helpers.py (Python device selection helpers)")
     else:
         print("\n❌ Setup encountered errors. Check mixed_gpu_setup_results.json for details.")
+
+
+def demonstrate_new_helper_usage():
+    """
+    Demonstrate how to use the new gpu_device_helpers module
+    """
+    try:
+        # Import the helper module (this will only work if it exists)
+        from gpu_device_helpers import MixedGPUDeviceSelector, auto_select_device
+        
+        print("🔧 Using the new GPU device helper:")
+        print("=" * 40)
+        
+        # Use the auto selection function
+        device = auto_select_device('auto')
+        print(f"Auto-selected device: {device}")
+        
+        # Use the advanced selector
+        selector = MixedGPUDeviceSelector()
+        amd_result = selector.get_optimal_device('amd')
+        nvidia_result = selector.get_optimal_device('nvidia')
+        
+        print(f"AMD optimization result: {amd_result['device_string']} ({amd_result['vendor']})")
+        print(f"NVIDIA optimization result: {nvidia_result['device_string']} ({nvidia_result['vendor']})")
+        
+        if amd_result['warnings']:
+            print("AMD Warnings:")
+            for warning in amd_result['warnings']:
+                print(f"  - {warning}")
+                
+        if nvidia_result['warnings']:
+            print("NVIDIA Warnings:")
+            for warning in nvidia_result['warnings']:
+                print(f"  - {warning}")
+                
+    except ImportError:
+        print("❌ gpu_device_helpers module not found. Please run create_device_selection_helpers() first.")
+    except Exception as e:
+        print(f"❌ Error demonstrating helper usage: {e}")
+
 
 if __name__ == "__main__":
     main()
